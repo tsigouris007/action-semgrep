@@ -1,0 +1,8 @@
+{
+  "ignored_warnings": [
+    {
+      "note": "False positive XSS",
+      "fingerprint": "24e837af81182b2c6322e2b35bd0ec1a86df16507cce561a10a770e20c31929a1cc53f2755af862b2afec80c3a165afb0ae1ff48c2e4f7f7280f0e2425d351a0_0"
+    }
+  ]
+}
