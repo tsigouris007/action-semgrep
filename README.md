@@ -111,7 +111,7 @@ jobs:
           echo "Got changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
 
       - name: Semgrep run
-        uses: tsigouris007/action-semgrep@master
+        uses: tsigouris007/action-semgrep@main
         with:
           changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
           artifact: ${{ env.ARTIFACT }}
