@@ -74,7 +74,7 @@ jobs:
     name: Semgrep run
     runs-on: ubuntu-latest
     container:
-      image: action-semgrep:master
+      image: tsigouris007/action-semgrep:<VERSION|BRANCH|COMMIT>
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -92,31 +92,45 @@ jobs:
         run: |
           chown root:root $(pwd)
 
+      # Filter for changed files
+      # Filter for specific file extensions (here is php for example)
+      # We add some additional filtering for subfolders (excepted_dir_1, 2)
       - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v29.0.2
-        with:
-          files: |
-            **.js
-            **/**.js
-            **.jsx
-            **/**.jsx
-            **.py
-            **/**.py
-            **.go
-            **/**.go
+        if: ${{ github.event_name == 'pull_request' }}
+        id: changed_files
+        run: |
+          FILTERED_FILES=$(gh api --paginate repos/<REPO_NAME>/pulls/${{ github.event.number }}/files -q \
+            '.[] | select(.status == "removed" | not) | .filename' \
+            | grep -E '.*\.php' \
+            | grep -E -v '<excepted_dir_1>|<excepted_dir_2>' \
+            | xargs)
+          echo "Got files: $FILTERED_FILES"
+          echo "CHANGED_FILES=$(echo $FILTERED_FILES)" >> $GITHUB_ENV
 
       - name: Show changed files
         run: |
-          echo "Got changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "Got changed files: ${{ env.CHANGED_FILES != '' }}"
 
+      # Fetch all semgrep rules from https://github.com/semgrep/semgrep-rules
+      - name: Fetch external rules
+        run: |
+          git clone https://github.com/semgrep/semgrep-rules@<VERSION|BRANCH|COMMIT>
+
+      # Note: You can use config parameter in order to specify whole rule folders or event specific ones as shown
       - name: Semgrep run
+        if: ${{ env.CHANGED_FILES != '' }}
         uses: tsigouris007/action-semgrep@master
         with:
-          changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
+          changed_files: ${{ env.CHANGED_FILES != '' }}
           artifact: ${{ env.ARTIFACT }}
           semgrep_comment: true
           semgrep_ignore: "semgrep.ignore"
+          semgrep_flags: |
+            --verbose
+            --metrics=off
+            --disable-version-check
+            --config=semgrep-rules/php/
+            --config=semgrep-rules/php/lang/security/backticks-use.yaml
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

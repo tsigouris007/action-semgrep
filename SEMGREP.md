@@ -1,6 +1,6 @@
 # Resources
-Docker Image: returntocorp/semgrep:1.56.0
-Semgrep: https://github.com/semgrep/semgrep
+Docker Image: returntocorp/semgrep:1.56.0 \
+Semgrep: https://github.com/semgrep/semgrep \
 Semgrep Rules: https://semgrep.dev/playground/new
 
 # Tool + Rules
